@@ -48,50 +48,55 @@
 }
 
 .dark {
-  --background: rgb(18, 18, 18);
-  --foreground: rgb(226, 232, 240);
-  --card: rgb(23, 23, 23);
-  --card-foreground: rgb(226, 232, 240);
-  --popover: rgb(36, 36, 36);
-  --popover-foreground: rgb(169, 169, 169);
-  --primary: rgb(0, 98, 57);
-  --primary-foreground: rgb(221, 232, 227);
-  --secondary: rgb(36, 36, 36);
-  --secondary-foreground: rgb(250, 250, 250);
-  --muted: rgb(31, 31, 31);
-  --muted-foreground: rgb(162, 162, 162);
-  --accent: rgb(49, 49, 49);
-  --accent-foreground: rgb(250, 250, 250);
-  --destructive: rgb(84, 28, 21);
-  --destructive-foreground: rgb(237, 233, 232);
-  --border: rgb(41, 41, 41);
-  --input: rgb(36, 36, 36);
-  --ring: rgb(74, 222, 128);
-  --chart-1: rgb(74, 222, 128);
-  --chart-2: rgb(96, 165, 250);
-  --chart-3: rgb(167, 139, 250);
-  --chart-4: rgb(251, 191, 36);
-  --chart-5: rgb(45, 212, 191);
-  --sidebar: rgb(18, 18, 18);
-  --sidebar-foreground: rgb(137, 137, 137);
-  --sidebar-primary: rgb(0, 98, 57);
-  --sidebar-primary-foreground: rgb(221, 232, 227);
-  --sidebar-accent: rgb(49, 49, 49);
-  --sidebar-accent-foreground: rgb(250, 250, 250);
-  --sidebar-border: rgb(41, 41, 41);
-  --sidebar-ring: rgb(74, 222, 128);
-  --font-sans: Outfit, sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: monospace;
-  --radius: 0.5rem;
-  --shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
-  --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
-  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
-  --shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
-  --shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
-  --shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
-  --shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
+For data points on charts!:
+        borderColor: 'rgb(74, 222, 128)', // Bright green
+        backgroundColor: 'rgba(74, 222, 128, 0.2)', // Transparent green
+        borderColor: 'rgb(96, 165, 250)', // Bright blue
+        backgroundColor: 'rgba(96, 165, 250, 0.2)', // Transparent blue
+--background: rgb(18, 18, 18);
+--foreground: rgb(226, 232, 240);
+--card: rgb(23, 23, 23);
+--card-foreground: rgb(226, 232, 240);
+--popover: rgb(36, 36, 36);
+--popover-foreground: rgb(169, 169, 169);
+--primary: rgb(0, 98, 57);
+--primary-foreground: rgb(221, 232, 227);
+--secondary: rgb(36, 36, 36);
+--secondary-foreground: rgb(250, 250, 250);
+--muted: rgb(31, 31, 31);
+--muted-foreground: rgb(162, 162, 162);
+--accent: rgb(49, 49, 49);
+--accent-foreground: rgb(250, 250, 250);
+--destructive: rgb(84, 28, 21);
+--destructive-foreground: rgb(237, 233, 232);
+--border: rgb(41, 41, 41);
+--input: rgb(36, 36, 36);
+--ring: rgb(74, 222, 128);
+--chart-1: rgb(74, 222, 128);
+--chart-2: rgb(96, 165, 250);
+--chart-3: rgb(167, 139, 250);
+--chart-4: rgb(251, 191, 36);
+--chart-5: rgb(45, 212, 191);
+--sidebar: rgb(18, 18, 18);
+--sidebar-foreground: rgb(137, 137, 137);
+--sidebar-primary: rgb(0, 98, 57);
+--sidebar-primary-foreground: rgb(221, 232, 227);
+--sidebar-accent: rgb(49, 49, 49);
+--sidebar-accent-foreground: rgb(250, 250, 250);
+--sidebar-border: rgb(41, 41, 41);
+--sidebar-ring: rgb(74, 222, 128);
+--font-sans: Outfit, sans-serif;
+--font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+--font-mono: monospace;
+--radius: 0.5rem;
+--shadow-2xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
+--shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.09);
+--shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+--shadow: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 1px 2px -1px hsl(0 0% 0% / 0.17);
+--shadow-md: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 2px 4px -1px hsl(0 0% 0% / 0.17);
+--shadow-lg: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 4px 6px -1px hsl(0 0% 0% / 0.17);
+--shadow-xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.17), 0px 8px 10px -1px hsl(0 0% 0% / 0.17);
+--shadow-2xl: 0px 1px 3px 0px hsl(0 0% 0% / 0.43);
 }
 
 @theme inline {
