@@ -1,8 +1,30 @@
-import { getAuthHeaders } from './auth'
+// This file reads a Personal Access Token from a .env.local file.
+// This is secure for local development.
+// DO NOT commit the .env.local file to your repository.
 
-const GITHUB_API_BASE =
-  '[https://api.github.com/repos/](https://api.github.com/repos/)'
+// 1. Create a file named .env.local in your project root.
+// 2. Add this line to it: VITE_GITHUB_PAT=your_personal_access_token_here
+const GITHUB_PAT = import.meta.env.VITE_GITHUB_PAT
+
+const GITHUB_API_BASE = 'https://api.github.com/repos/'
 const delay = ms => new Promise(res => setTimeout(res, ms))
+
+// Helper function to create the authorization headers
+function getAuthHeaders () {
+  if (!GITHUB_PAT) {
+    // This check helps diagnose if the .env.local file is not set up correctly.
+    console.error(
+      'CRITICAL: VITE_GITHUB_PAT is not configured in your .env.local file. API calls will be unauthenticated and will likely fail due to rate limiting.'
+    )
+    return {}
+  }
+  return {
+    headers: {
+      Authorization: `token ${GITHUB_PAT}`,
+      Accept: 'application/vnd.github.v3+json'
+    }
+  }
+}
 
 async function fetchAllPaginatedData (url) {
   let results = []
@@ -11,7 +33,9 @@ async function fetchAllPaginatedData (url) {
     const response = await fetch(nextUrl, getAuthHeaders())
     if (!response.ok) {
       if (response.status === 403)
-        throw new Error('GitHub API rate limit exceeded.')
+        throw new Error(
+          'GitHub API rate limit exceeded. Check your token permissions.'
+        )
       const error = await response.json()
       throw new Error(error.message || `Error: ${response.statusText}`)
     }
@@ -47,6 +71,18 @@ async function fetchContributorStatsWithRetry (url, setLoadingMessage) {
   )
 }
 
+async function fetchFromGithub (endpoint) {
+  const response = await fetch(
+    `${GITHUB_API_BASE}${endpoint}`,
+    getAuthHeaders()
+  )
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || `Error: ${response.statusText}`)
+  }
+  return response.json()
+}
+
 export async function analyzeRepo (owner, repo, setLoadingMessage) {
   setLoadingMessage('Fetching repository data...')
   const repoPromise = fetchFromGithub(`${owner}/${repo}`)
@@ -69,19 +105,9 @@ export async function analyzeRepo (owner, repo, setLoadingMessage) {
 
   const allIssues = issuesAndPRs.filter(item => !item.pull_request)
   const allPRs = issuesAndPRs.filter(item => item.pull_request)
-  const contributorStats = stats ? stats.sort((a, b) => b.total - a.total) : []
+  const contributorStats = Array.isArray(stats)
+    ? stats.sort((a, b) => b.total - a.total)
+    : []
 
   return { repoData, allIssues, allPRs, contributorStats }
-}
-
-async function fetchFromGithub (endpoint) {
-  const response = await fetch(
-    `${GITHUB_API_BASE}${endpoint}`,
-    getAuthHeaders()
-  )
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.message || `Error: ${response.statusText}`)
-  }
-  return response.json()
 }
