@@ -48,6 +48,11 @@
 }
 
 .dark {
+For data points on charts!:
+        borderColor: 'rgb(74, 222, 128)', // Bright green
+        backgroundColor: 'rgba(74, 222, 128, 0.2)', // Transparent green
+        borderColor: 'rgb(96, 165, 250)', // Bright blue
+        backgroundColor: 'rgba(96, 165, 250, 0.2)', // Transparent blue
 --background: rgb(18, 18, 18);
 --foreground: rgb(226, 232, 240);
 --card: rgb(23, 23, 23);

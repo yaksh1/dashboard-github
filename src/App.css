@@ -40,3 +40,11 @@
 .read-the-docs {
   color: #888;
 }
+
+.stale-indicator {
+    border-left: 4px solid var(--destructive);
+}
+
+.recent-indicator {
+    border-left: 4px solid var(--chart-1);
+}
