@@ -213,7 +213,7 @@
         // 1. Create a GitHub OAuth App: https://github.com/settings/applications/new
         // 2. Set 'Authorization callback URL' to the URL where you deploy this app.
         // 3. Paste your Client ID here.
-        const GITHUB_CLIENT_ID = 'Ov23liDk2rk6DwAVDZzO'; // <-- PASTE YOUR GITHUB OAUTH APP CLIENT ID HERE
+        const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID; // <-- PASTE YOUR GITHUB OAUTH APP CLIENT ID HERE
 
         // 4. Deploy the serverless function below to a service like Netlify, Vercel, or AWS.
         // 5. Set the GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables in your deployment service.
