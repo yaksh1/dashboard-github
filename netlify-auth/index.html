@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repo Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Injects the provided theme variables */
+        :root {
+            --background: rgb(252, 252, 252);
+            --foreground: rgb(23, 23, 23);
+            --card: rgb(252, 252, 252);
+            --card-foreground: rgb(23, 23, 23);
+            --popover: rgb(252, 252, 252);
+            --popover-foreground: rgb(82, 82, 82);
+            --primary: rgb(114, 227, 173);
+            --primary-foreground: rgb(30, 39, 35);
+            --secondary: rgb(253, 253, 253);
+            --secondary-foreground: rgb(23, 23, 23);
+            --muted: rgb(237, 237, 237);
+            --muted-foreground: rgb(82, 82, 82);
+            --accent: rgb(237, 237, 237);
+            --accent-foreground: rgb(32, 32, 32);
+            --destructive: rgb(202, 50, 20);
+            --destructive-foreground: rgb(255, 252, 252);
+            --stale-background: rgba(202, 50, 20, 0.05);
+            --border: rgb(223, 223, 223);
+            --input: rgb(246, 246, 246);
+            --ring: rgb(114, 227, 173);
+            --radius: 0.5rem;
+            --font-sans: 'Outfit', sans-serif;
+            --chart-1: rgb(114, 227, 173);
+            --chart-2: rgb(59, 130, 246);
+            --chart-3: rgb(139, 92, 246);
+        }
+
+        .dark {
+            --background: rgb(18, 18, 18);
+            --foreground: rgb(226, 232, 240);
+            --card: rgb(23, 23, 23);
+            --card-foreground: rgb(226, 232, 240);
+            --popover: rgb(36, 36, 36);
+            --popover-foreground: rgb(169, 169, 169);
+            --primary: rgb(0, 98, 57);
+            --primary-foreground: rgb(221, 232, 227);
+            --secondary: rgb(36, 36, 36);
+            --secondary-foreground: rgb(250, 250, 250);
+            --muted: rgb(31, 31, 31);
+            --muted-foreground: rgb(162, 162, 162);
+            --accent: rgb(49, 49, 49);
+            --accent-foreground: rgb(250, 250, 250);
+            --destructive: rgb(84, 28, 21);
+            --destructive-foreground: rgb(237, 233, 232);
+            --stale-background: rgba(84, 28, 21, 0.25);
+            --border: rgb(41, 41, 41);
+            --input: rgb(36, 36, 36);
+            --ring: rgb(74, 222, 128);
+            --chart-1: rgb(74, 222, 128);
+            --chart-2: rgb(96, 165, 250);
+            --chart-3: rgb(167, 139, 250);
+        }
+
+        /* General Styles */
+        body {
+            background-color: var(--background);
+            color: var(--foreground);
+            font-family: var(--font-sans);
+        }
+        .card {
+            background-color: var(--card);
+            color: var(--card-foreground);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .card-clickable {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-clickable:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .dark .card-clickable:hover { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .input {
+            background-color: var(--input);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .input:focus { outline: none; box-shadow: 0 0 0 2px var(--ring); }
+        .btn-primary { background-color: var(--primary); color: var(--primary-foreground); border-radius: var(--radius); }
+        .btn-secondary { background-color: var(--secondary); color: var(--secondary-foreground); border: 1px solid var(--border); border-radius: var(--radius); }
+        .btn-secondary:hover { background-color: var(--accent); }
+        .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .muted-text { color: var(--muted-foreground); }
+        .stale-indicator { border-left: 3px solid var(--destructive); background-color: var(--stale-background); }
+        .recent-indicator { border-left: 3px solid var(--chart-1); }
+        
+        .loader {
+            border: 4px solid var(--accent);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="auth-status" class="fixed top-4 left-4 z-50 flex items-center gap-2"></div>
+
+    <button id="theme-toggle" class="fixed top-4 right-4 p-2 rounded-full btn-secondary z-50">
+        <svg id="theme-icon-light" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+        <svg id="theme-icon-dark" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+    </button>
+
+    <div id="app" class="container mx-auto p-4 md:p-8">
+
+        <!-- Entry View -->
+        <div id="entry-view" class="max-w-2xl mx-auto text-center min-h-screen flex flex-col justify-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Get a bird's-eye view of any GitHub repository.</h1>
+            <p class="muted-text mb-8 text-lg">Paste a repository URL to analyze its health, community, and activity. Sign in with GitHub for a higher API rate limit.</p>
+            <form id="repo-form" class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="repo-url" class="input w-full p-3 text-center sm:text-left" placeholder="e.g., https://github.com/facebook/react" required>
+                <button type="submit" class="btn-primary font-bold p-3 px-6">Analyze</button>
+            </form>
+            <div id="entry-feedback" class="mt-4 text-sm h-5"></div>
+        </div>
+
+        <!-- Main navigation for different views -->
+        <div id="main-nav" class="hidden">
+             <div class="flex justify-between items-center mb-6 flex-wrap gap-4">
+                 <button id="back-to-entry-button" class="btn-secondary px-4 py-2 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    New Search
+                </button>
+                <h2 id="repo-name" class="text-2xl font-bold text-center order-first w-full sm:w-auto sm:order-none"></h2>
+            </div>
+            <div class="border-b border-[var(--border)] mb-6">
+                <nav class="flex -mb-px" id="main-view-tabs">
+                    <button data-view="dashboard" class="main-tab text-lg whitespace-nowrap py-3 px-6 border-b-2 font-medium">Dashboard</button>
+                    <button data-view="community" class="main-tab text-lg whitespace-nowrap py-3 px-6 border-b-2 font-medium">Community</button>
+                    <button data-view="lists" class="main-tab text-lg whitespace-nowrap py-3 px-6 border-b-2 font-medium">Explorer</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="hidden">
+            <div id="summary-stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
+                <div class="lg:col-span-3 card p-4"><h3 class="font-bold mb-2">Activity Trend (Last 90 Days)</h3><canvas id="activity-chart"></canvas></div>
+                <div class="lg:col-span-2 card p-4"><h3 class="font-bold mb-2">Issue Breakdown by Label</h3><canvas id="labels-chart"></canvas></div>
+            </div>
+        </div>
+        
+        <!-- Community View -->
+        <div id="community-view" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card p-4"><h3 class="font-bold mb-2">Top Contributors (Last 90 Days)</h3><canvas id="top-contributors-chart"></canvas></div>
+                <div class="card p-4"><h3 class="font-bold mb-2">Bus Factor (Top 5 All-Time)</h3><p class="text-sm muted-text mb-2">Percentage of total commits from top contributors.</p><canvas id="bus-factor-chart"></canvas></div>
+                <div class="lg:col-span-2 card p-4"><h3 class="font-bold mb-2">Unique Monthly Contributors (Last Year)</h3><canvas id="contributor-growth-chart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- List Explorer View -->
+        <div id="list-view" class="hidden">
+            <div class="card p-4 mb-6">
+                <form id="search-form" class="flex flex-col sm:flex-row gap-4 items-center">
+                    <div class="relative w-full">
+                        <svg class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 muted-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="search-input" class="input w-full p-2 pl-10" placeholder="Search... e.g., label:bug age:>30d text">
+                    </div>
+                </form>
+            </div>
+            <div class="border-b border-[var(--border)] mb-6">
+                <nav class="flex -mb-px" id="list-view-tabs">
+                    <button data-tab="issues" class="list-tab btn-primary text-lg whitespace-nowrap py-3 px-6 border-b-2 font-medium">Issues</button>
+                    <button data-tab="prs" class="list-tab text-lg whitespace-nowrap py-3 px-6 border-b-2 font-medium border-transparent text-[var(--muted-foreground)] hover:text-[var(--foreground)]">Pull Requests</button>
+                </nav>
+            </div>
+            <div id="issues-tab-content">
+                <div id="issues-list" class="space-y-4 min-h-[200px]"></div><div id="issues-pagination" class="mt-4 flex justify-between items-center"></div>
+            </div>
+            <div id="prs-tab-content" class="hidden">
+                <div id="prs-list" class="space-y-4 min-h-[200px]"></div><div id="prs-pagination" class="mt-4 flex justify-between items-center"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="card popover w-full max-w-3xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b border-[var(--border)] flex justify-between items-start">
+                <div><h4 id="modal-title" class="text-xl font-bold"></h4><p id="modal-subtitle" class="text-sm muted-text"></p></div>
+                <button id="modal-close" class="p-1 -mt-1 -mr-1"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto flex-grow"></div>
+            <div class="p-4 border-t border-[var(--border)] text-right"><a id="modal-github-link" href="#" target="_blank" rel="noopener noreferrer" class="btn-primary font-bold py-2 px-4 inline-block">View on GitHub</a></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // 1. Create a GitHub OAuth App: https://github.com/settings/applications/new
+        // 2. Set 'Authorization callback URL' to the URL where you deploy this app.
+        // 3. Paste your Client ID here.
+        const GITHUB_CLIENT_ID = 'Ov23liDk2rk6DwAVDZzO'; // <-- PASTE YOUR GITHUB OAUTH APP CLIENT ID HERE
+
+        // 4. Deploy the serverless function below to a service like Netlify, Vercel, or AWS.
+        // 5. Set the GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables in your deployment service.
+        // 6. Update the URL here to point to your deployed function.
+        const AUTH_FUNCTION_URL = 'https://hubgit-dashboard.netlify.app/.netlify/functions/auth'; // <-- e.g., 'https://your-site.netlify.app/.netlify/functions/auth'
+
+      
+
+        // --- DOM Elements ---
+        const allViews = ['entry-view', 'dashboard-view', 'community-view', 'list-view'];
+        const getEl = id => document.getElementById(id);
+        const entryView = getEl('entry-view'), mainNav = getEl('main-nav'), repoForm = getEl('repo-form'), repoUrlInput = getEl('repo-url'), entryFeedback = getEl('entry-feedback'), backToEntryButton = getEl('back-to-entry-button'), repoNameEl = getEl('repo-name'), summaryStatsEl = getEl('summary-stats'), searchForm = getEl('search-form'), searchInput = getEl('search-input'), issuesListEl = getEl('issues-list'), prsListEl = getEl('prs-list'), issuesPaginationEl = getEl('issues-pagination'), prsPaginationEl = getEl('prs-pagination'), modal = getEl('modal'), modalClose = getEl('modal-close'), modalTitle = getEl('modal-title'), modalSubtitle = getEl('modal-subtitle'), modalBody = getEl('modal-body'), modalGithubLink = getEl('modal-github-link'), themeToggle = getEl('theme-toggle'), themeIconLight = getEl('theme-icon-light'), themeIconDark = getEl('theme-icon-dark'), activityChartCanvas = getEl('activity-chart'), labelsChartCanvas = getEl('labels-chart'), topContributorsChartCanvas = getEl('top-contributors-chart'), busFactorChartCanvas = getEl('bus-factor-chart'), contributorGrowthChartCanvas = getEl('contributor-growth-chart'), mainViewTabs = getEl('main-view-tabs'), listViewTabs = getEl('list-view-tabs'), issuesTabContent = getEl('issues-tab-content'), prsTabContent = getEl('prs-tab-content'), authStatusEl = getEl('auth-status');
+
+        // --- State ---
+        let currentRepo = null, allIssues = [], allPRs = [], allCommits = [], contributorStats = [], currentIssuesPage = 1, currentPRsPage = 1, activityChart, labelsChart, topContributorsChart, busFactorChart, contributorGrowthChart;
+        const ITEMS_PER_PAGE = 10;
+        const GITHUB_API_BASE = 'https://api.github.com/repos/';
+
+        // --- API & Data ---
+        const parseRepoUrl = url => { try { const path = new URL(url).pathname; const parts = path.split('/').filter(p => p); if (parts.length >= 2) return { owner: parts[0], repo: parts[1] }; } catch (e) { const parts = url.split('/').filter(p => p); if (parts.length === 2) return { owner: parts[0], repo: parts[1] }; } return null; };
+        async function fetchAllPaginatedData(url) { let results = [], nextUrl = url; while (nextUrl) { const response = await fetch(nextUrl, getAuthHeaders()); if (!response.ok) { if (response.status === 403) throw new Error('GitHub API rate limit exceeded. Please wait a moment.'); const error = await response.json(); throw new Error(error.message || `Error: ${response.statusText}`); } results = results.concat(await response.json()); const linkHeader = response.headers.get('Link'); nextUrl = null; if (linkHeader) { const nextLink = linkHeader.split(',').find(s => s.includes('rel="next"')); if (nextLink) nextUrl = nextLink.match(/<(.*?)>/)[1]; } } return results; }
+        
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+
+        async function fetchContributorStatsWithRetry(url, retries = 10, delayMs = 2000) {
+            for (let i = 0; i < retries; i++) {
+                const response = await fetch(url, getAuthHeaders());
+                if (response.status === 200) {
+                    return response.json();
+                }
+                if (response.status === 202) {
+                    setLoadingState(true, `Computing contributor stats... (attempt ${i + 1})`);
+                    await delay(delayMs);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || `Error fetching stats: ${response.statusText}`);
+                }
+            }
+            throw new Error('Could not retrieve contributor stats after multiple attempts.');
+        }
+
+        async function analyzeRepo(owner, repo) {
+            currentRepo = `${owner}/${repo}`;
+            setLoadingState(true, 'Fetching repository data...');
+            try {
+                const repoPromise = fetchFromGithub(`${owner}/${repo}`);
+                setLoadingState(true, 'Fetching issues & PRs...');
+                const issuesPromise = fetchAllPaginatedData(`${GITHUB_API_BASE}${owner}/${repo}/issues?state=open&per_page=100`);
+                const statsPromise = fetchContributorStatsWithRetry(`${GITHUB_API_BASE}${owner}/${repo}/stats/contributors`);
+                
+                const [repoData, issuesAndPRs, stats] = await Promise.all([repoPromise, issuesPromise, statsPromise]);
+                
+                allIssues = issuesAndPRs.filter(item => !item.pull_request);
+                allPRs = issuesAndPRs.filter(item => item.pull_request);
+                contributorStats = stats ? stats.sort((a,b) => b.total - a.total) : [];
+                
+                renderAllViews(repoData);
+                showView('dashboard');
+            } catch (error) { 
+                showFeedback(error.message, true); 
+                resetToEntryView(); 
+            } finally { 
+                setLoadingState(false); 
+            }
+        }
+        
+        async function fetchFromGithub(endpoint) { const response = await fetch(`${GITHUB_API_BASE}${endpoint}`, getAuthHeaders()); if (!response.ok) { const error = await response.json(); throw new Error(error.message || `Error: ${response.statusText}`); } return response.json(); }
+        const calculateAverageAge = items => { if (items.length === 0) return 'N/A'; const now = new Date(); const totalAge = items.reduce((acc, item) => acc + (now - new Date(item.created_at)), 0); return `${Math.round(totalAge / items.length / 86400000)} days`; };
+
+        // --- Authentication ---
+        function getAuthHeaders() { const token = sessionStorage.getItem('github_token'); return token ? { headers: { Authorization: `token ${token}` } } : {}; }
+        function handleSignIn() { if (!GITHUB_CLIENT_ID) { alert('Please configure GITHUB_CLIENT_ID in the script.'); return; } const state = Math.random().toString(36).substring(7); sessionStorage.setItem('oauth_state', state); window.location.href = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&scope=repo&state=${state}`; }
+        function handleSignOut() { sessionStorage.removeItem('github_token'); sessionStorage.removeItem('github_user'); updateAuthStatus(); }
+        async function handleOAuthCallback() { const params = new URLSearchParams(window.location.search); const code = params.get('code'); const state = params.get('state'); if (code && state === sessionStorage.getItem('oauth_state')) { sessionStorage.removeItem('oauth_state'); try { if (!AUTH_FUNCTION_URL) { throw new Error('Authentication function URL is not configured.'); } const response = await fetch(AUTH_FUNCTION_URL, { method: 'POST', body: JSON.stringify({ code }) }); const data = await response.json(); if (data.token) { sessionStorage.setItem('github_token', data.token); const userResponse = await fetch('https://api.github.com/user', getAuthHeaders()); const userData = await userResponse.json(); sessionStorage.setItem('github_user', userData.login); } } catch (error) { showFeedback(`Authentication error: ${error.message}`, true); } finally { window.history.replaceState({}, document.title, window.location.pathname); updateAuthStatus(); } } }
+        function updateAuthStatus() { const user = sessionStorage.getItem('github_user'); if (user) { authStatusEl.innerHTML = `<span class="text-sm muted-text">Signed in as ${user}</span><button id="sign-out-btn" class="btn-secondary text-sm px-2 py-1">Sign Out</button>`; getEl('sign-out-btn').addEventListener('click', handleSignOut); } else { authStatusEl.innerHTML = `<button id="sign-in-btn" class="btn-secondary text-sm px-2 py-1">Sign in with GitHub</button>`; getEl('sign-in-btn').addEventListener('click', handleSignIn); } }
+
+        // --- View Management ---
+        function showView(viewName, defaultTab) { allViews.forEach(id => getEl(id).classList.add('hidden')); mainNav.classList.toggle('hidden', viewName === 'entry'); if (viewName !== 'entry') { getEl(viewName).classList.remove('hidden'); document.querySelectorAll('.main-tab').forEach(tab => { const isSelected = tab.dataset.view === viewName; tab.classList.toggle('btn-primary', isSelected); tab.classList.toggle('border-transparent', !isSelected); tab.classList.toggle('text-[var(--muted-foreground)]', !isSelected); tab.classList.toggle('hover:text-[var(--foreground)]', !isSelected); }); } else { getEl('entry-view').classList.remove('hidden'); } if (viewName === 'lists' && defaultTab) { switchListTab(defaultTab); } }
+        function switchListTab(tabName) { document.querySelectorAll('.list-tab').forEach(tab => { const isSelected = tab.dataset.tab === tabName; tab.classList.toggle('btn-primary', isSelected); tab.classList.toggle('border-transparent', !isSelected); tab.classList.toggle('text-[var(--muted-foreground)]', !isSelected); tab.classList.toggle('hover:text-[var(--foreground)]', !isSelected); }); issuesTabContent.classList.toggle('hidden', tabName !== 'issues'); prsTabContent.classList.toggle('hidden', tabName !== 'prs'); }
+
+        // --- Rendering ---
+        function renderAllViews(repoData) { repoNameEl.textContent = repoData.full_name; renderDashboardView(); renderCommunityView(); renderAllLists(); }
+        function renderDashboardView() { renderSummaryStats(); renderActivityChart(); renderLabelsChart(); }
+        function renderCommunityView() { renderTopContributorsChart(); renderBusFactorChart(); renderContributorGrowthChart(); }
+        function renderSummaryStats() { const stats = [ { label: 'Open Issues', value: allIssues.length.toLocaleString(), icon: '🐞', type: 'lists', tab: 'issues' }, { label: 'Open PRs', value: allPRs.length.toLocaleString(), icon: '🔃', type: 'lists', tab: 'prs' }, { label: 'Avg. Issue Age', value: calculateAverageAge(allIssues), icon: '⏳' }, { label: 'Avg. PR Age', value: calculateAverageAge(allPRs), icon: '⌛' } ]; summaryStatsEl.innerHTML = stats.map(stat => `<div class="card p-4 text-center ${stat.type ? 'card-clickable' : ''}" ${stat.type ? `data-view="${stat.type}" data-tab="${stat.tab}"` : ''}><div class="text-2xl font-bold">${stat.icon} ${stat.value}</div><div class="text-sm muted-text">${stat.label}</div></div>`).join(''); summaryStatsEl.querySelectorAll('.card-clickable').forEach(card => card.addEventListener('click', e => showView(e.currentTarget.dataset.view, e.currentTarget.dataset.tab))); }
+        function renderAllLists() { const query = searchInput.value.toLowerCase().trim(); const filteredIssues = filterItems(allIssues, query); renderPaginatedList(getEl('issues-list'), getEl('issues-pagination'), filteredIssues, currentIssuesPage, 'issues'); const filteredPRs = filterItems(allPRs, query); renderPaginatedList(getEl('prs-list'), getEl('prs-pagination'), filteredPRs, currentPRsPage, 'prs'); }
+        function filterItems(items, query) { const parts = query.split(' ').filter(p => p); if (parts.length === 0) return items; return items.filter(item => parts.every(part => { if (part.startsWith('#')) return item.number.toString() === part.substring(1); if (part.startsWith('label:')) return item.labels.some(l => l.name.toLowerCase().includes(part.substring(6).trim())); const ageMatch = part.match(/^age:([<>])(\d+)d?$/); if (ageMatch) { const operator = ageMatch[1]; const days = parseInt(ageMatch[2], 10); const age = (new Date() - new Date(item.created_at)) / 86400000; if (operator === '>') return age > days; if (operator === '<') return age < days; } return item.title.toLowerCase().includes(part); })); }
+        function renderPaginatedList(listEl, paginationEl, items, currentPage, type) { listEl.innerHTML = ''; if (items.length === 0) { listEl.innerHTML = '<p class="muted-text p-4 card">No items match the current filter.</p>'; paginationEl.innerHTML = ''; return; } const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE); const paginatedItems = items.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE); paginatedItems.forEach(item => { const itemEl = document.createElement('div'); itemEl.innerHTML = createItemHtml(item); listEl.appendChild(itemEl); }); document.querySelectorAll(`.${type}-item-card`).forEach(card => card.addEventListener('click', () => openModal(card.dataset.type, card.dataset.number))); renderPaginationControls(paginationEl, currentPage, totalPages, type); }
+        function createItemHtml(item) { const type = item.pull_request ? 'pr' : 'issue'; const labelsHtml = item.labels.map(label => `<span class="label-tag" style="background-color:#${label.color}30; color:#${label.color}; border: 1px solid #${label.color}80;">${label.name}</span>`).join(''); const stalenessDays = (new Date() - new Date(item.updated_at)) / 86400000; let stalenessClass = ''; if (stalenessDays > 30) stalenessClass = 'stale-indicator'; else if (stalenessDays < 1) stalenessClass = 'recent-indicator'; return `<div class="card p-4 hover:shadow-md transition-shadow cursor-pointer ${type}-item-card ${stalenessClass}" data-type="${type}" data-number="${item.number}"><h4 class="font-bold mb-2">${item.title}</h4><div class="flex flex-wrap gap-2 mb-2">${labelsHtml}</div><p class="text-sm muted-text">#${item.number} by ${item.user.login} &bull; updated ${Math.floor(stalenessDays)} days ago</p></div>`; }
+        function renderPaginationControls(el, currentPage, totalPages, type) { if (totalPages <= 1) { el.innerHTML = ''; return; } el.innerHTML = `<button class="btn-secondary px-3 py-1 text-sm" data-page="${currentPage - 1}" data-type="${type}" ${currentPage === 1 ? 'disabled' : ''}>Previous</button><span class="text-sm muted-text">Page ${currentPage} of ${totalPages}</span><button class="btn-secondary px-3 py-1 text-sm" data-page="${currentPage + 1}" data-type="${type}" ${currentPage === totalPages ? 'disabled' : ''}>Next</button>`; }
+        
+        // --- Chart Rendering ---
+        function getChartOptions(isDarkMode) { const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'; const textColor = isDarkMode ? 'rgb(226, 232, 240)' : 'rgb(82, 82, 82)'; return { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor } } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } }; }
+        function renderActivityChart() { const ninetyDaysAgo = new Date(new Date().setDate(new Date().getDate() - 90)); const items = [...allIssues, ...allPRs].filter(i => new Date(i.created_at) > ninetyDaysAgo); const dataByDay = items.reduce((acc, item) => { const day = new Date(item.created_at).toISOString().split('T')[0]; acc[day] = (acc[day] || 0) + 1; return acc; }, {}); const labels = Object.keys(dataByDay).sort(); if (activityChart) activityChart.destroy(); activityChart = new Chart(activityChartCanvas, { type: 'line', data: { labels, datasets: [{ label: 'Items Opened', data: labels.map(day => dataByDay[day]), borderColor: 'var(--chart-1)', backgroundColor: 'rgba(114, 227, 173, 0.1)', fill: true, tension: 0.3 }] }, options: { ...getChartOptions(document.documentElement.classList.contains('dark')), scales: { x: { type: 'time', time: { unit: 'week' } } } } }); }
+        function renderLabelsChart() { const labelCounts = allIssues.reduce((acc, issue) => { issue.labels.forEach(label => { acc[label.name] = (acc[label.name] || 0) + 1; }); return acc; }, {}); const sortedLabels = Object.entries(labelCounts).sort(([, a], [, b]) => b - a).slice(0, 7); if (labelsChart) labelsChart.destroy(); labelsChart = new Chart(labelsChartCanvas, { type: 'bar', data: { labels: sortedLabels.map(l => l[0]), datasets: [{ label: 'Issue Count', data: sortedLabels.map(l => l[1]), backgroundColor: 'var(--chart-2)' }] }, options: { ...getChartOptions(document.documentElement.classList.contains('dark')), indexAxis: 'y', onClick: (e) => { const points = labelsChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true); if (points.length) { const label = labelsChart.data.labels[points[0].index]; showView('lists', 'issues'); searchInput.value = `label:${label}`; searchInput.dispatchEvent(new Event('input')); } } } }); }
+        function renderTopContributorsChart() { if (!contributorStats || contributorStats.length === 0) return; const contributorCommits = contributorStats.slice(0, 10).map(c => ({ login: c.author.login, commits: c.weeks.slice(-13).reduce((sum, w) => sum + w.c, 0) })).sort((a,b) => b.commits - a.commits); if (topContributorsChart) topContributorsChart.destroy(); topContributorsChart = new Chart(topContributorsChartCanvas, { type: 'bar', data: { labels: contributorCommits.map(c => c.login), datasets: [{ label: 'Commits in Last 90 Days', data: contributorCommits.map(c => c.commits), backgroundColor: 'var(--chart-1)' }] }, options: getChartOptions(document.documentElement.classList.contains('dark')) }); }
+        function renderBusFactorChart() { if (!contributorStats || contributorStats.length === 0) return; const totalCommits = contributorStats.reduce((sum, c) => sum + c.total, 0); if (totalCommits === 0) return; const top5 = contributorStats.slice(0, 5); const top5Percentages = top5.map(c => (c.total / totalCommits) * 100); if (busFactorChart) busFactorChart.destroy(); busFactorChart = new Chart(busFactorChartCanvas, { type: 'bar', data: { labels: top5.map(c => c.author.login), datasets: [{ label: '% of Total Commits', data: top5Percentages, backgroundColor: 'var(--chart-3)' }] }, options: { ...getChartOptions(document.documentElement.classList.contains('dark')), indexAxis: 'y', plugins: { tooltip: { callbacks: { label: (c) => `${c.raw.toFixed(2)}%` } } } } }); }
+        function renderContributorGrowthChart() { if (!contributorStats || contributorStats.length === 0) return; const monthlyContributors = contributorStats.reduce((acc, contributor) => { contributor.weeks.forEach(week => { const date = new Date(week.w * 1000); const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; if (week.c > 0) { if (!acc[monthKey]) acc[monthKey] = new Set(); acc[monthKey].add(contributor.author.login); } }); return acc; }, {}); const sortedMonths = Object.keys(monthlyContributors).sort().slice(-12); const growthData = sortedMonths.map(month => monthlyContributors[month].size); if (contributorGrowthChart) contributorGrowthChart.destroy(); contributorGrowthChart = new Chart(contributorGrowthChartCanvas, { type: 'line', data: { labels: sortedMonths, datasets: [{ label: 'Unique Contributors', data: growthData, borderColor: 'var(--chart-2)', fill: true, tension: 0.3 }] }, options: { ...getChartOptions(document.documentElement.classList.contains('dark')), scales: { y: { beginAtZero: true } } } }); }
+        
+        // --- Modal & UI Logic ---
+        async function openModal(type, number) { modal.classList.remove('hidden'); modal.classList.add('flex'); modalBody.innerHTML = '<div class="mx-auto loader"></div>'; const item = (type === 'issue' ? allIssues : allPRs).find(i => i.number == number); if (!item) return; modalTitle.textContent = item.title; modalSubtitle.textContent = `#${item.number} by ${item.user.login}`; modalGithubLink.href = item.html_url; try { let bodyHtml = item.body ? item.body.replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/`([^`]+)`/g, '<code class="bg-[var(--muted)] text-sm px-1 rounded">$&</code>').replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-[var(--muted)] p-3 rounded my-2 text-sm overflow-x-auto"><code>$2</code></pre>').replace(/^(#+)\s*(.*)/gm, (match, h, c) => `<h${h.length} class="font-bold mt-4 mb-2">${c}</h${h.length}>`).replace(/\n/g, '<br>') : '<p class="muted-text">No description provided.</p>'; modalBody.innerHTML = bodyHtml; } catch (error) { modalBody.innerHTML = `<p class="text-[var(--destructive)]">Could not load details: ${error.message}</p>`; } }
+        repoForm.addEventListener('submit', e => { e.preventDefault(); const url = repoUrlInput.value.trim(); const repoInfo = parseRepoUrl(url); if (repoInfo) analyzeRepo(repoInfo.owner, repoInfo.repo); else showFeedback('Please enter a valid GitHub repository URL.', true); });
+        backToEntryButton.addEventListener('click', resetToEntryView);
+        mainViewTabs.addEventListener('click', e => { const tab = e.target.closest('.main-tab'); if (tab) showView(tab.dataset.view); });
+        listViewTabs.addEventListener('click', e => { const tab = e.target.closest('.list-tab'); if (tab) switchListTab(tab.dataset.tab); });
+        searchForm.addEventListener('submit', e => e.preventDefault());
+        searchInput.addEventListener('input', () => { currentIssuesPage = 1; currentPRsPage = 1; renderAllLists(); });
+        function handlePaginationClick(e) { const target = e.target.closest('button'); if (!target || target.disabled) return; const page = parseInt(target.dataset.page); const type = target.dataset.type; if (type === 'issues') currentIssuesPage = page; else if (type === 'prs') currentPRsPage = page; renderAllLists(); }
+        issuesPaginationEl.addEventListener('click', handlePaginationClick);
+        prsPaginationEl.addEventListener('click', handlePaginationClick);
+        modalClose.addEventListener('click', () => modal.classList.add('hidden'));
+        modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+        function setLoadingState(isLoading, message = '') { const button = repoForm.querySelector('button'); repoUrlInput.disabled = isLoading; button.disabled = isLoading; if (isLoading) { button.innerHTML = `<div class="loader !w-6 !h-6 mx-auto"></div>`; entryFeedback.textContent = message; entryFeedback.style.color = 'var(--muted-foreground)'; } else { button.textContent = 'Analyze'; entryFeedback.textContent = ''; } }
+        function showFeedback(message, isError = false) { entryFeedback.textContent = message; entryFeedback.style.color = isError ? 'var(--destructive)' : 'var(--muted-foreground)'; setTimeout(() => { if (entryFeedback.textContent === message) entryFeedback.textContent = ''; }, 4000); }
+        function resetToEntryView() { showView('entry'); repoUrlInput.value = ''; searchInput.value = ''; [activityChart, labelsChart, topContributorsChart, busFactorChart, contributorGrowthChart].forEach(c => c?.destroy()); }
+        function applyTheme(isDark) { document.documentElement.classList.toggle('dark', isDark); themeIconLight.classList.toggle('hidden', isDark); themeIconDark.classList.toggle('hidden', !isDark); [activityChart, labelsChart, topContributorsChart, busFactorChart, contributorGrowthChart].forEach(chart => { if (chart) { Object.assign(chart.options, getChartOptions(isDark)); chart.update(); } }); }
+        themeToggle.addEventListener('click', () => { const isDark = !document.documentElement.classList.contains('dark'); localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); });
+        
+        // --- Initialization ---
+        function initialize() {
+            handleOAuthCallback();
+            updateAuthStatus();
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(savedTheme === 'dark' || (!savedTheme && prefersDark));
+            const repoFromUrl = new URLSearchParams(window.location.search).get('repo');
+            if (repoFromUrl) {
+                const repoInfo = parseRepoUrl(repoFromUrl);
+                if (repoInfo) {
+                    repoUrlInput.value = `https://github.com/${repoInfo.owner}/${repoInfo.repo}`;
+                    analyzeRepo(repoInfo.owner, repoInfo.repo);
+                }
+            }
+        }
+        initialize();
+    </script>
+</body>
+</html>
