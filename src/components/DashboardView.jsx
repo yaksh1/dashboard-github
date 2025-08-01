@@ -2,7 +2,7 @@ import React from 'react';
 import StatCard from './ui/StatCard';
 import ActivityChart from './charts/ActivityChart';
 import LabelsChart from './charts/LabelsChart';
-import { calculateAverageAge, calculateAverageMergeTime } from '../utils';
+import { calculateAverageAge} from '../utils';
 
 function DashboardView({ repoData, setActiveView }) {
     const { allIssues, allPRs } = repoData;
@@ -27,7 +27,7 @@ function DashboardView({ repoData, setActiveView }) {
             value: calculateAverageAge(allIssues),
             icon: '⏳'
         },
-        { label: 'Avg. PR Merge Time', value: calculateAverageMergeTime(allPRs), icon: '⌛' }
+        { label: 'Avg. PR Age', value: calculateAverageAge(allPRs), icon: '⌛' }
     ];
 
     return (

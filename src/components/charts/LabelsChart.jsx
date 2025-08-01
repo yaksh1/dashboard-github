@@ -30,8 +30,8 @@ function LabelsChart({ issues, setActiveView }) {
                 datasets: [{
                     label: 'Issue Count',
                     data: sortedLabels.map(l => l[1]),
-                    backgroundColor: 'var(--chart-2)',
-                    borderColor: 'var(--chart-2)',
+borderColor: 'rgb(74, 222, 128)', // Bright green
+        backgroundColor: 'rgba(74, 222, 128, 0.2)', // Transparent green
                     borderWidth: 1
                 }]
             },
