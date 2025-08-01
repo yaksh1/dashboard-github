@@ -1,19 +1,13 @@
-# Task 1: At-a-Glance Summary Bar
+# Fix Average PR Age Calculation
 
-## Changes Made
+## Changes
 
-- Modified `src/components/DashboardView.jsx` to add a new stat card for "Avg. PR Merge Time".
-- Implemented the logic to calculate the average pull request merge time in `src/utils.js` and used it in `DashboardView.jsx`.
-- Removed the "Avg. PR Age" stat card.
+- Modified `src/utils.js` to correctly calculate the average PR age by considering all closed PRs, not just merged ones.
+- Renamed `calculateAverageMergeTime` to `calculateAveragePRAge` for clarity.
+- Updated `src/components/DashboardView.jsx` to use the new function and display "Avg. PR Age".
 
-# Task 2: Insightful Graphs and Visualizations
+## How to test
 
-## Changes Made
-
-- Implemented the `ActivityChart.jsx` component to display the number of opened and closed issues and PRs over the last 90 days.
-- The `LabelsChart.jsx` component was already implemented and meets the requirements.
-- Implemented the "Staleness Highlighting" feature by adding CSS classes to `App.css` and the necessary logic to `ListView.jsx`.
-
-## Next Steps
-
-- All tasks are completed.
+1. Run the application.
+2. Analyze a repository.
+3. The "Avg. PR Age" stat card should now display a value instead of "N/A".
