@@ -1,13 +1,10 @@
-# Fix Average PR Age Calculation
+# Create README
 
 ## Changes
 
-- Modified `src/utils.js` to correctly calculate the average PR age by considering all closed PRs, not just merged ones.
-- Renamed `calculateAverageMergeTime` to `calculateAveragePRAge` for clarity.
-- Updated `src/components/DashboardView.jsx` to use the new function and display "Avg. PR Age".
+- Created a comprehensive `README.md` file for the project.
+- The README includes a project description, features, tech stack, getting started instructions, and a section on how to use the application.
 
 ## How to test
 
-1. Run the application.
-2. Analyze a repository.
-3. The "Avg. PR Age" stat card should now display a value instead of "N/A".
+1. View the `README.md` file in the `create-readme` worktree.
